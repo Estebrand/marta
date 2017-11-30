@@ -17,12 +17,76 @@
     </p>
 <% end %>
 
-<% @nearby_buses.each do |bus| %>
+<% @nearby_buses.each_with_index do |bus, index| %>
   <p>
     <strong>Route:</strong> <%= bus["ROUTE"] %><br />
     <strong>Vehicle:</strong> <%= bus["VEHICLE"] %><br />
     <strong>Next Stop:</strong> <%= bus["TIMEPOINT"] %>
   </p>
+
+<!-- javascript function -->
+<script>
+
+  $(document).ready(function(){
+    function initialize(){
+      var userCoords = new google.maps.LatLng(<%= @location.latitude %>,<%= @location.longitude %>);
+     
+      var busCoords = new google.maps.LatLng(<%= bus["LATITUDE"] %>, <%= bus["LONGITUDE"] %>);
+
+      var mapOptions = {
+        center: userCoords,
+        zoom: 13,
+        scrollwheel: false
+      };
+
+      var map = new google.maps.Map(document.getElementById('map-canvas<%= index %>'), mapOptions);
+
+      // This is the text for our bus
+      var contentStringBus = "A bus is here!";
+
+      // This is the text for our user
+      var contentStringUser = "You are here";
+
+      // This is the marker for the buses
+      var busMaker = new google.maps.Marker({
+        position: busCoords,
+        map: map,
+        animation: google.maps.Animation.DROP
+      });
+
+      // This is the marker for the User
+      var userMarker = new google.maps.Marker({
+        position: userCoords,
+        map: map,
+        animation: google.maps.Animation.BOUNCE
+      });
+
+      // Info window and event listener for bus
+      var infoWindowBus = new google.maps.InfoWindow({
+        content: contentStringBus
+      });
+
+      google.maps.event.addListener(busMaker, 'click', function(){
+        infoWindowBus.open(map, busMaker);
+      });
+
+      // Info window and event listener for user
+      var InfoWindowUser = new google.maps.InfoWindow({
+        content: contentStringUser
+      });
+
+      google.maps.event.addListener(userMarker, 'click', function(){
+        infoWindowUser.open(map, userMaker);
+      });
+
+    }
+
+    google.maps.event.addDomListener(window, 'load', initialize);
+  });
+
+</script>
+  <div class="bus-map" id="map-canvas<%= index %>"></div>
+
 <% end %>
 
 <%= link_to "Actually, I'm at...", edit_location_path(@location) %>
